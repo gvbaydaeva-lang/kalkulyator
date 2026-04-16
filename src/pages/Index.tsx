@@ -1,37 +1,37 @@
-import { useState, useCallback } from "react";
+import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Compass } from "lucide-react";
-import IncomeCard from "@/components/IncomeCard";
-import ExpenseCard from "@/components/ExpenseCard";
+import LedgerCard from "@/components/LedgerCard";
 import Dashboard from "@/components/Dashboard";
-
-interface Item {
-  id: string;
-  name: string;
-  amount: number;
-}
+import MonthSwitcher from "@/components/MonthSwitcher";
+import ComparisonCard from "@/components/ComparisonCard";
+import { useBudget } from "@/hooks/useBudget";
+import { MONTH_NAMES, monthKey, prevMonthKey } from "@/types/budget";
 
 const Index = () => {
-  const [incomes, setIncomes] = useState<Item[]>([
-    { id: "1", name: "Зарплата", amount: 0 },
-  ]);
-  const [expenses, setExpenses] = useState<Item[]>([
-    { id: "2", name: "Аренда", amount: 0 },
-    { id: "3", name: "Продукты", amount: 0 },
-  ]);
+  const today = new Date();
+  const [year, setYear] = useState(today.getFullYear());
+  const [month, setMonth] = useState(today.getMonth());
 
-  const totalIncome = incomes.reduce((s, i) => s + i.amount, 0);
-  const totalExpenses = expenses.reduce((s, e) => s + e.amount, 0);
+  const { state, getMonth, addEntry, removeEntry, addCategory } = useBudget();
 
-  const makeHandlers = (setter: React.Dispatch<React.SetStateAction<Item[]>>) => ({
-    add: () => setter((prev) => [...prev, { id: Date.now().toString(), name: "", amount: 0 }]),
-    remove: (id: string) => setter((prev) => prev.filter((e) => e.id !== id)),
-    update: (id: string, field: "name" | "amount", value: string | number) =>
-      setter((prev) => prev.map((e) => (e.id === id ? { ...e, [field]: value } : e))),
-  });
+  const curKey = monthKey(year, month);
+  const prevKey = prevMonthKey(curKey);
+  const curMonth = getMonth(curKey);
+  const prevMonth = getMonth(prevKey);
 
-  const incomeHandlers = makeHandlers(setIncomes);
-  const expenseHandlers = makeHandlers(setExpenses);
+  const defaultDate = useMemo(() => {
+    const t = new Date();
+    if (t.getFullYear() === year && t.getMonth() === month) {
+      return t.toISOString().slice(0, 10);
+    }
+    return `${curKey}-01`;
+  }, [year, month, curKey]);
+
+  const prevMonthName = (() => {
+    const [py, pm] = prevKey.split("-").map(Number);
+    return `${MONTH_NAMES[pm - 1]} ${py}`;
+  })();
 
   return (
     <div className="min-h-screen pb-12">
@@ -51,28 +51,45 @@ const Index = () => {
         <p className="text-muted-foreground text-sm text-center border-primary-foreground border-none mx-0 border-0">             Ваш путь к финансовой свободе</p>
       </motion.header>
 
+      <div className="max-w-6xl mx-auto px-4 md:px-6 mb-6">
+        <MonthSwitcher
+          year={year}
+          month={month}
+          onChange={(y, m) => { setYear(y); setMonth(m); }}
+        />
+      </div>
+
       <div className="max-w-6xl mx-auto px-4 md:px-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="space-y-5">
-          <IncomeCard
-            incomes={incomes}
-            onAdd={incomeHandlers.add}
-            onRemove={incomeHandlers.remove}
-            onUpdate={incomeHandlers.update}
+          <LedgerCard
+            kind="income"
+            entries={curMonth.entries.filter((e) => e.kind === "income")}
+            categories={state.categories}
+            defaultDate={defaultDate}
+            onAdd={(d) => addEntry(curKey, { ...d, kind: "income" })}
+            onRemove={(id) => removeEntry(curKey, id)}
+            onAddCategory={(name, emoji) => addCategory({ name, emoji, kind: "income" })}
           />
-          <ExpenseCard
-            expenses={expenses}
-            onAdd={expenseHandlers.add}
-            onRemove={expenseHandlers.remove}
-            onUpdate={expenseHandlers.update}
+          <LedgerCard
+            kind="expense"
+            entries={curMonth.entries.filter((e) => e.kind === "expense")}
+            categories={state.categories}
+            defaultDate={defaultDate}
+            onAdd={(d) => addEntry(curKey, { ...d, kind: "expense" })}
+            onRemove={(id) => removeEntry(curKey, id)}
+            onAddCategory={(name, emoji) => addCategory({ name, emoji, kind: "expense" })}
           />
         </div>
 
-        <Dashboard
-          incomes={incomes}
-          expenses={expenses}
-          totalIncome={totalIncome}
-          totalExpenses={totalExpenses}
-        />
+        <div className="space-y-5">
+          <Dashboard entries={curMonth.entries} categories={state.categories} />
+          <ComparisonCard
+            currentEntries={curMonth.entries}
+            previousEntries={prevMonth.entries}
+            categories={state.categories}
+            prevMonthName={prevMonthName}
+          />
+        </div>
       </div>
     </div>
   );
