@@ -38,17 +38,17 @@ const Index = () => {
       <motion.header
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="pt-8 pb-6 px-6 text-center"
+        className="pt-8 pb-6 px-6 text-center text-base font-sans"
       >
         <div className="flex items-center justify-center gap-3 mb-2">
           <div className="gradient-fill p-3 rounded-2xl">
             <Compass className="w-7 h-7 text-primary-foreground" />
           </div>
-          <h1 className="font-display text-2xl md:text-3xl font-bold gradient-text">
+          <h1 className="font-display text-2xl md:text-3xl gradient-text font-extrabold text-left">
             Калькулятор семейного бюджета
           </h1>
         </div>
-        <p className="text-muted-foreground text-sm">Ваш путь к финансовой свободе</p>
+        <p className="text-muted-foreground text-sm text-center mx-[5px] border border-primary-foreground border-none">             Ваш путь к финансовой свободе</p>
       </motion.header>
 
       <div className="max-w-6xl mx-auto px-4 md:px-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
