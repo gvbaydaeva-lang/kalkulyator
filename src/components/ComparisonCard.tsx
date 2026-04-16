@@ -18,17 +18,17 @@ const sumByCategory = (entries: Entry[]) => {
 const Trend = ({ delta, pct }: { delta: number; pct: number | null }) => {
   if (delta === 0) {
     return (
-      <span className="inline-flex items-center gap-1 text-muted-foreground text-xs font-medium">
-        <Minus className="w-3 h-3" /> без изменений
+      <span className="inline-flex items-center gap-1 text-muted-foreground text-[11px] font-medium whitespace-nowrap">
+        <Minus className="w-3 h-3" /> 0
       </span>
     );
   }
   const up = delta > 0;
   return (
-    <span className={`inline-flex items-center gap-1 text-xs font-semibold ${up ? "text-secondary" : "text-destructive"}`}>
-      {up ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />}
-      {Math.abs(delta).toLocaleString("ru-RU")} ₽
-      {pct !== null && <span className="opacity-70">({up ? "+" : ""}{pct.toFixed(0)}%)</span>}
+    <span className={`inline-flex items-center gap-0.5 text-[11px] font-semibold whitespace-nowrap tabular-nums ${up ? "text-secondary" : "text-destructive"}`}>
+      {up ? <ArrowUp className="w-3 h-3 shrink-0" /> : <ArrowDown className="w-3 h-3 shrink-0" />}
+      {Math.abs(delta).toLocaleString("ru-RU")}&nbsp;₽
+      {pct !== null && <span className="opacity-70 ml-0.5">({up ? "+" : ""}{pct.toFixed(0)}%)</span>}
     </span>
   );
 };
@@ -116,10 +116,10 @@ const ComparisonCard = ({ currentEntries, previousEntries, categories, prevMonth
           const delta = m.cur - m.prev;
           const pct = calcPct(m.cur, m.prev);
           return (
-            <div key={m.label} className="bg-background/60 rounded-2xl p-3 text-center">
-              <p className="text-xs text-muted-foreground mb-1">{m.label}</p>
-              <p className={`font-display text-base font-bold ${m.color} mb-1`}>
-                {m.cur.toLocaleString("ru-RU")} ₽
+            <div key={m.label} className="bg-background/60 rounded-2xl p-2.5 flex flex-col items-center text-center min-w-0">
+              <p className="text-[11px] text-muted-foreground mb-1 truncate w-full">{m.label}</p>
+              <p className={`font-display text-sm sm:text-base font-bold ${m.color} mb-1.5 tabular-nums whitespace-nowrap leading-tight`}>
+                {m.cur.toLocaleString("ru-RU")}&nbsp;₽
               </p>
               <Trend delta={delta} pct={pct} />
             </div>
@@ -134,15 +134,17 @@ const ComparisonCard = ({ currentEntries, previousEntries, categories, prevMonth
           {catRows.map(({ cat, cur, prev, delta }) => {
             const pct = calcPct(cur, prev);
             return (
-              <div key={cat?.id ?? "x"} className="bg-background/60 rounded-xl p-2.5 flex items-center gap-2">
-                <span className="text-base">{cat?.emoji ?? "❓"}</span>
+              <div key={cat?.id ?? "x"} className="bg-background/60 rounded-xl p-2.5 flex items-center gap-2 min-w-0">
+                <span className="text-base shrink-0">{cat?.emoji ?? "❓"}</span>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-foreground truncate">{cat?.name ?? "Без категории"}</p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-[11px] text-muted-foreground truncate tabular-nums">
                     {prev.toLocaleString("ru-RU")} → {cur.toLocaleString("ru-RU")} ₽
                   </p>
                 </div>
-                <Trend delta={delta} pct={pct} />
+                <div className="shrink-0">
+                  <Trend delta={delta} pct={pct} />
+                </div>
               </div>
             );
           })}
