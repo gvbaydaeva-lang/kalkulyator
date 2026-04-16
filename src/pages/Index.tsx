@@ -5,6 +5,7 @@ import LedgerCard from "@/components/LedgerCard";
 import Dashboard from "@/components/Dashboard";
 import MonthSwitcher from "@/components/MonthSwitcher";
 import ComparisonCard from "@/components/ComparisonCard";
+import ThemeToggle from "@/components/ThemeToggle";
 import { useBudget } from "@/hooks/useBudget";
 import { MONTH_NAMES, monthKey, prevMonthKey } from "@/types/budget";
 
@@ -91,6 +92,7 @@ const Index = () => {
           />
         </div>
       </div>
+      <ThemeToggle />
     </div>
   );
 };
