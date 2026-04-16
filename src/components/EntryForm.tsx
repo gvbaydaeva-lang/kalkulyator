@@ -24,14 +24,14 @@ const EntryForm = ({ kind, categories, defaultDate, onSubmit, onAddCategory, acc
   const [newName, setNewName] = useState("");
   const [newEmoji, setNewEmoji] = useState(EMOJIS[0]);
 
-  const accentRing = accent === "green" ? "focus:ring-green-400/40" : "focus:ring-red-400/40";
+  const accentRing = accent === "green" ? "focus:ring-secondary/50" : "focus:ring-destructive/50";
   const accentBtn = accent === "green"
-    ? "bg-green-500 hover:bg-green-600 shadow-green-500/30"
-    : "bg-destructive hover:opacity-90 shadow-destructive/30";
+    ? "bg-secondary hover:bg-secondary/90 text-secondary-foreground glow-secondary"
+    : "bg-destructive hover:bg-destructive/90 text-destructive-foreground glow-primary";
   const accentTileActive = accent === "green"
-    ? "bg-gradient-to-br from-green-500 to-green-600 text-white shadow-lg shadow-green-500/30 scale-105"
-    : "bg-gradient-to-br from-red-500 to-red-600 text-white shadow-lg shadow-red-500/30 scale-105";
-  const accentBorder = accent === "green" ? "border-green-400/40" : "border-red-400/40";
+    ? "bg-gradient-to-br from-secondary to-secondary/70 text-secondary-foreground shadow-lg glow-secondary scale-105"
+    : "bg-gradient-to-br from-destructive to-accent text-destructive-foreground shadow-lg glow-primary scale-105";
+  const accentBorder = accent === "green" ? "border-secondary/50" : "border-destructive/50";
 
   const selectedCat = filtered.find((c) => c.id === categoryId);
 
@@ -112,7 +112,7 @@ const EntryForm = ({ kind, categories, defaultDate, onSubmit, onAddCategory, acc
                 />
                 <button
                   onClick={handleAddCategory}
-                  className={`${accentBtn} text-white p-1.5 rounded-lg shrink-0`}
+                  className={`${accentBtn} p-1.5 rounded-lg shrink-0`}
                 >
                   <Check className="w-4 h-4" />
                 </button>
@@ -169,7 +169,7 @@ const EntryForm = ({ kind, categories, defaultDate, onSubmit, onAddCategory, acc
       <button
         onClick={handleSubmit}
         disabled={!categoryId || !amount || Number(amount) <= 0}
-        className={`w-full ${accentBtn} text-white py-3 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 font-semibold text-sm disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none`}
+        className={`w-full ${accentBtn} py-3 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 font-semibold text-sm disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none`}
       >
         <Plus className="w-4 h-4" />
         Добавить {kind === "income" ? "доход" : "расход"}

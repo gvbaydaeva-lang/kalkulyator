@@ -69,13 +69,13 @@ const Dashboard = ({ entries, categories }: Props) => {
           className="absolute top-0 left-0 w-full h-1 rounded-t-[2rem]"
           style={{
             background: balance >= 0
-              ? "linear-gradient(90deg, #22c55e, #4ade80)"
-              : "linear-gradient(90deg, #ef4444, #f87171)",
+              ? "linear-gradient(90deg, hsl(var(--secondary)), hsl(var(--secondary) / 0.6))"
+              : "linear-gradient(90deg, hsl(var(--destructive)), hsl(var(--accent)))",
           }}
         />
         <div className="flex items-center gap-3 mb-5">
-          <div className={`p-2.5 rounded-2xl ${balance >= 0 ? "bg-green-500/15" : "bg-red-500/15"}`}>
-            <Scale className={`w-5 h-5 ${balance >= 0 ? "text-green-600" : "text-red-500"}`} />
+          <div className={`p-2.5 rounded-2xl ${balance >= 0 ? "bg-secondary/15" : "bg-destructive/15"}`}>
+            <Scale className={`w-5 h-5 ${balance >= 0 ? "text-secondary" : "text-destructive"}`} />
           </div>
           <div>
             <h3 className="font-display text-base font-bold text-foreground">Баланс месяца</h3>
@@ -88,7 +88,7 @@ const Dashboard = ({ entries, categories }: Props) => {
             key={balance}
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className={`text-4xl md:text-5xl font-display font-bold ${balance >= 0 ? "text-green-600" : "text-red-500"}`}
+            className={`text-4xl md:text-5xl font-display font-bold ${balance >= 0 ? "text-secondary" : "text-destructive"}`}
           >
             {hasData ? (balance >= 0 ? "+" : "") + balance.toLocaleString("ru-RU") + " ₽" : "—"}
           </motion.span>
@@ -117,15 +117,15 @@ const Dashboard = ({ entries, categories }: Props) => {
             <div>
               <div className="flex justify-between items-center mb-1.5">
                 <div className="flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4 text-green-500" />
+                  <TrendingUp className="w-4 h-4 text-secondary" />
                   <span className="text-sm font-medium text-foreground">Доходы</span>
                 </div>
-                <span className="text-sm font-bold text-green-600">{totalIncome.toLocaleString("ru-RU")} ₽</span>
+                <span className="text-sm font-bold text-secondary">{totalIncome.toLocaleString("ru-RU")} ₽</span>
               </div>
               <div className="h-6 rounded-full bg-muted overflow-hidden">
                 <motion.div
                   className="h-full rounded-full"
-                  style={{ background: "linear-gradient(90deg, #22c55e, #4ade80)" }}
+                  style={{ background: "linear-gradient(90deg, hsl(var(--secondary)), hsl(var(--secondary) / 0.6))" }}
                   initial={{ width: 0 }}
                   animate={{ width: `${incomePercent}%` }}
                   transition={{ duration: 0.8, ease: "easeOut" }}
@@ -136,15 +136,15 @@ const Dashboard = ({ entries, categories }: Props) => {
             <div>
               <div className="flex justify-between items-center mb-1.5">
                 <div className="flex items-center gap-2">
-                  <TrendingDown className="w-4 h-4 text-red-500" />
+                  <TrendingDown className="w-4 h-4 text-destructive" />
                   <span className="text-sm font-medium text-foreground">Расходы</span>
                 </div>
-                <span className="text-sm font-bold text-red-500">{totalExpenses.toLocaleString("ru-RU")} ₽</span>
+                <span className="text-sm font-bold text-destructive">{totalExpenses.toLocaleString("ru-RU")} ₽</span>
               </div>
               <div className="h-6 rounded-full bg-muted overflow-hidden">
                 <motion.div
                   className="h-full rounded-full"
-                  style={{ background: "linear-gradient(90deg, #ef4444, #f87171)" }}
+                  style={{ background: "linear-gradient(90deg, hsl(var(--destructive)), hsl(var(--accent)))" }}
                   initial={{ width: 0 }}
                   animate={{ width: `${expensePercent}%` }}
                   transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
