@@ -10,21 +10,23 @@ const DEFAULT_CATEGORIES: Category[] = [
   { id: "c-bonus", name: "Премия", emoji: "🎁", kind: "income" },
   { id: "c-investments", name: "Инвестиции", emoji: "📈", kind: "income" },
   { id: "c-other-income", name: "Прочее", emoji: "✨", kind: "income" },
-  // Расходы — самые популярные
+  // Расходы — самые популярные (16 категорий)
   { id: "c-food", name: "Продукты", emoji: "🛒", kind: "expense" },
   { id: "c-transport", name: "Транспорт", emoji: "🚗", kind: "expense" },
   { id: "c-cafe", name: "Кафе и рестораны", emoji: "☕", kind: "expense" },
   { id: "c-housing", name: "Жильё и ЖКХ", emoji: "🏠", kind: "expense" },
-  { id: "c-clothes", name: "Одежда", emoji: "👕", kind: "expense" },
+  { id: "c-clothes", name: "Одежда и обувь", emoji: "👕", kind: "expense" },
   { id: "c-marketplace", name: "Маркетплейсы", emoji: "📦", kind: "expense" },
   { id: "c-education", name: "Образование", emoji: "🎓", kind: "expense" },
   { id: "c-kids", name: "Дети и садик", emoji: "🧸", kind: "expense" },
   { id: "c-subscriptions", name: "Подписки", emoji: "🔁", kind: "expense" },
   { id: "c-health", name: "Здоровье", emoji: "💊", kind: "expense" },
   { id: "c-entertainment", name: "Развлечения", emoji: "🎬", kind: "expense" },
-  { id: "c-beauty", name: "Красота", emoji: "💅", kind: "expense" },
+  { id: "c-beauty", name: "Красота и уход", emoji: "💅", kind: "expense" },
   { id: "c-pets", name: "Питомцы", emoji: "🐾", kind: "expense" },
   { id: "c-travel", name: "Путешествия", emoji: "✈️", kind: "expense" },
+  { id: "c-gifts", name: "Подарки", emoji: "🎁", kind: "expense" },
+  { id: "c-sport", name: "Спорт и фитнес", emoji: "🏋️", kind: "expense" },
   { id: "c-other-expense", name: "Прочее", emoji: "🧩", kind: "expense" },
 ];
 
@@ -38,8 +40,12 @@ const load = (): BudgetState => {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return initialState;
     const parsed = JSON.parse(raw);
+    const existing: Category[] = parsed.categories?.length ? parsed.categories : [];
+    // Мержим: добавляем дефолтные категории, которых ещё нет (по id)
+    const existingIds = new Set(existing.map((c) => c.id));
+    const merged = [...existing, ...DEFAULT_CATEGORIES.filter((c) => !existingIds.has(c.id))];
     return {
-      categories: parsed.categories?.length ? parsed.categories : DEFAULT_CATEGORIES,
+      categories: merged.length ? merged : DEFAULT_CATEGORIES,
       months: parsed.months ?? {},
     };
   } catch {
