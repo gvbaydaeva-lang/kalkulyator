@@ -57,9 +57,9 @@ const ExpenseCard = ({ expenses, onAdd, onRemove, onUpdate }: Props) => (
               value={exp.name}
               onChange={(e) => onUpdate(exp.id, "name", e.target.value)}
               placeholder="Название"
-              className="flex-1 min-w-0 glass rounded-xl px-3 py-2.5 text-sm font-medium text-foreground placeholder:text-muted-foreground/40 outline-none focus:ring-2 focus:ring-destructive/20 transition-all"
+              className="flex-[1.4] min-w-0 glass rounded-xl px-3 py-2.5 text-sm font-medium text-foreground placeholder:text-muted-foreground/40 outline-none focus:ring-2 focus:ring-destructive/20 transition-all"
             />
-            <div className="relative w-32 shrink-0">
+            <div className="relative flex-1 shrink-0">
               <input
                 type="number"
                 value={exp.amount || ""}
