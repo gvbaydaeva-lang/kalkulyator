@@ -45,7 +45,7 @@ const Index = () => {
             <Compass className="w-7 h-7 text-primary-foreground" />
           </div>
           <h1 className="font-display text-2xl md:text-3xl font-bold gradient-text">
-            Family Budget Navigator
+            Калькулятор семейного бюджета
           </h1>
         </div>
         <p className="text-muted-foreground text-sm">Ваш путь к финансовой свободе</p>
