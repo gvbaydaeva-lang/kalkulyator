@@ -40,12 +40,18 @@ const LedgerCard = ({ kind, entries, categories, defaultDate, onAdd, onRemove, o
   const sortedEntries = [...entries].sort((a, b) => b.date.localeCompare(a.date));
   const visibleEntries = showAll ? sortedEntries : sortedEntries.slice(0, 5);
 
-  const accentText = isIncome ? "text-green-600" : "text-destructive";
-  const accentBg = isIncome ? "bg-green-500/15" : "bg-destructive/10";
-  const accentIcon = isIncome ? "text-green-600" : "text-destructive";
+  const accentText = isIncome ? "text-secondary" : "text-destructive";
+  const accentBg = isIncome ? "bg-secondary/15" : "bg-destructive/15";
+  const accentIcon = isIncome ? "text-secondary" : "text-destructive";
   const accentBtn = isIncome
-    ? "bg-green-500 hover:bg-green-600 shadow-green-500/20"
-    : "bg-destructive hover:opacity-90 shadow-destructive/20";
+    ? "bg-secondary hover:bg-secondary/90 text-secondary-foreground glow-secondary"
+    : "bg-destructive hover:bg-destructive/90 text-destructive-foreground glow-primary";
+  const accentBarGradient = isIncome
+    ? "bg-gradient-to-r from-secondary to-secondary/70"
+    : "bg-gradient-to-r from-destructive to-accent";
+  const accentGlowBg = isIncome
+    ? "bg-secondary/10 -translate-y-1/2 translate-x-1/2"
+    : "bg-destructive/10 translate-y-1/2 -translate-x-1/2";
 
   return (
     <motion.div
@@ -54,7 +60,7 @@ const LedgerCard = ({ kind, entries, categories, defaultDate, onAdd, onRemove, o
       transition={{ delay: isIncome ? 0.1 : 0.2 }}
       className="glass rounded-[2rem] p-6 space-y-4 relative overflow-hidden"
     >
-      <div className={`absolute ${isIncome ? "top-0 right-0" : "bottom-0 left-0"} w-32 h-32 rounded-full ${isIncome ? "bg-green-400/10 -translate-y-1/2 translate-x-1/2" : "bg-red-400/10 translate-y-1/2 -translate-x-1/2"} blur-3xl`} />
+      <div className={`absolute ${isIncome ? "top-0 right-0" : "bottom-0 left-0"} w-32 h-32 rounded-full ${accentGlowBg} blur-3xl`} />
 
       <div className="flex items-center justify-between relative">
         <div className="flex items-center gap-3">
@@ -68,7 +74,7 @@ const LedgerCard = ({ kind, entries, categories, defaultDate, onAdd, onRemove, o
         </div>
         <button
           onClick={() => setShowForm((v) => !v)}
-          className={`${accentBtn} text-white px-3 py-2 rounded-xl shadow-lg transition-all flex items-center gap-1.5 text-sm font-medium`}
+          className={`${accentBtn} px-3 py-2 rounded-xl shadow-lg transition-all flex items-center gap-1.5 text-sm font-semibold`}
         >
           <ListPlus className="w-4 h-4" />
           {showForm ? "Скрыть" : "Добавить"}
@@ -123,7 +129,7 @@ const LedgerCard = ({ kind, entries, categories, defaultDate, onAdd, onRemove, o
                     initial={{ width: 0 }}
                     animate={{ width: `${pct}%` }}
                     transition={{ duration: 0.5 }}
-                    className={`h-full rounded-full ${isIncome ? "bg-gradient-to-r from-green-400 to-green-500" : "bg-gradient-to-r from-red-400 to-red-500"}`}
+                    className={`h-full rounded-full ${accentBarGradient}`}
                   />
                 </div>
               </div>
