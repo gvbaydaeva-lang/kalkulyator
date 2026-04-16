@@ -3,45 +3,38 @@ import { motion } from "framer-motion";
 import { Compass } from "lucide-react";
 import IncomeCard from "@/components/IncomeCard";
 import ExpenseCard from "@/components/ExpenseCard";
-import DreamCard from "@/components/DreamCard";
 import Dashboard from "@/components/Dashboard";
 
-interface Expense {
+interface Item {
   id: string;
   name: string;
   amount: number;
 }
 
 const Index = () => {
-  const [mainIncome, setMainIncome] = useState(0);
-  const [extraIncome, setExtraIncome] = useState(0);
-  const [expenses, setExpenses] = useState<Expense[]>([
-    { id: "1", name: "Аренда", amount: 0 },
-    { id: "2", name: "Продукты", amount: 0 },
+  const [incomes, setIncomes] = useState<Item[]>([
+    { id: "1", name: "Зарплата", amount: 0 },
   ]);
-  const [dreamName, setDreamName] = useState("");
-  const [dreamAmount, setDreamAmount] = useState(0);
+  const [expenses, setExpenses] = useState<Item[]>([
+    { id: "2", name: "Аренда", amount: 0 },
+    { id: "3", name: "Продукты", amount: 0 },
+  ]);
 
-  const totalIncome = mainIncome + extraIncome;
+  const totalIncome = incomes.reduce((s, i) => s + i.amount, 0);
   const totalExpenses = expenses.reduce((s, e) => s + e.amount, 0);
 
-  const addExpense = useCallback(() => {
-    setExpenses((prev) => [...prev, { id: Date.now().toString(), name: "", amount: 0 }]);
-  }, []);
+  const makeHandlers = (setter: React.Dispatch<React.SetStateAction<Item[]>>) => ({
+    add: () => setter((prev) => [...prev, { id: Date.now().toString(), name: "", amount: 0 }]),
+    remove: (id: string) => setter((prev) => prev.filter((e) => e.id !== id)),
+    update: (id: string, field: "name" | "amount", value: string | number) =>
+      setter((prev) => prev.map((e) => (e.id === id ? { ...e, [field]: value } : e))),
+  });
 
-  const removeExpense = useCallback((id: string) => {
-    setExpenses((prev) => prev.filter((e) => e.id !== id));
-  }, []);
-
-  const updateExpense = useCallback((id: string, field: "name" | "amount", value: string | number) => {
-    setExpenses((prev) =>
-      prev.map((e) => (e.id === id ? { ...e, [field]: value } : e))
-    );
-  }, []);
+  const incomeHandlers = makeHandlers(setIncomes);
+  const expenseHandlers = makeHandlers(setExpenses);
 
   return (
     <div className="min-h-screen pb-12">
-      {/* Header */}
       <motion.header
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -58,36 +51,27 @@ const Index = () => {
         <p className="text-muted-foreground text-sm">Ваш путь к финансовой свободе</p>
       </motion.header>
 
-      {/* Main layout */}
       <div className="max-w-6xl mx-auto px-4 md:px-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Left — inputs */}
         <div className="space-y-5">
           <IncomeCard
-            mainIncome={mainIncome}
-            extraIncome={extraIncome}
-            onMainChange={setMainIncome}
-            onExtraChange={setExtraIncome}
+            incomes={incomes}
+            onAdd={incomeHandlers.add}
+            onRemove={incomeHandlers.remove}
+            onUpdate={incomeHandlers.update}
           />
           <ExpenseCard
             expenses={expenses}
-            onAdd={addExpense}
-            onRemove={removeExpense}
-            onUpdate={updateExpense}
-          />
-          <DreamCard
-            dreamName={dreamName}
-            dreamAmount={dreamAmount}
-            onNameChange={setDreamName}
-            onAmountChange={setDreamAmount}
+            onAdd={expenseHandlers.add}
+            onRemove={expenseHandlers.remove}
+            onUpdate={expenseHandlers.update}
           />
         </div>
 
-        {/* Right — dashboard */}
         <Dashboard
+          incomes={incomes}
+          expenses={expenses}
           totalIncome={totalIncome}
           totalExpenses={totalExpenses}
-          dreamName={dreamName}
-          dreamAmount={dreamAmount}
         />
       </div>
     </div>

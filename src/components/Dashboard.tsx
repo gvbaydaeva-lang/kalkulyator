@@ -1,52 +1,65 @@
-import { Shield, Target, Lightbulb, TrendingUp } from "lucide-react";
+import { BarChart3, Lightbulb, TrendingUp, TrendingDown, Scale } from "lucide-react";
 import { motion } from "framer-motion";
-import { Doughnut } from "react-chartjs-2";
-import { Chart as ChartJS, ArcElement, Tooltip } from "chart.js";
 
-ChartJS.register(ArcElement, Tooltip);
-
-interface Props {
-  totalIncome: number;
-  totalExpenses: number;
-  dreamName: string;
-  dreamAmount: number;
+interface IncomeItem {
+  id: string;
+  name: string;
+  amount: number;
 }
 
-const Dashboard = ({ totalIncome, totalExpenses, dreamName, dreamAmount }: Props) => {
-  const freeBalance = Math.max(totalIncome - totalExpenses, 0);
-  const dailyExpense = totalExpenses > 0 ? totalExpenses / 30 : 1;
-  const freedomDays = Math.floor(freeBalance / dailyExpense);
-  const monthsToDream = freeBalance > 0 && dreamAmount > 0 ? Math.ceil(dreamAmount / freeBalance) : 0;
-  const dreamProgress = freeBalance > 0 && dreamAmount > 0 ? Math.min((freeBalance / dreamAmount) * 100, 100) : 0;
+interface ExpenseItem {
+  id: string;
+  name: string;
+  amount: number;
+}
 
-  const chartData = {
-    labels: ["Ресурс на мечту", "Расходы"],
-    datasets: [
-      {
-        data: [freeBalance, totalExpenses],
-        backgroundColor: [
-          "hsl(245, 58%, 51%)",
-          "hsl(230, 20%, 88%)",
-        ],
-        borderWidth: 0,
-        cutout: "75%",
-        borderRadius: 8,
-      },
-    ],
-  };
+interface Props {
+  incomes: IncomeItem[];
+  expenses: ExpenseItem[];
+  totalIncome: number;
+  totalExpenses: number;
+}
 
-  const chartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: { tooltip: { enabled: true }, legend: { display: false } },
-  };
+const Dashboard = ({ incomes, expenses, totalIncome, totalExpenses }: Props) => {
+  const balance = totalIncome - totalExpenses;
+  const maxValue = Math.max(totalIncome, totalExpenses, 1);
+  const incomePercent = (totalIncome / maxValue) * 100;
+  const expensePercent = (totalExpenses / maxValue) * 100;
+  const savingsRate = totalIncome > 0 ? Math.round((balance / totalIncome) * 100) : 0;
 
-  const extraSaving = 2000;
-  const currentMonths = monthsToDream;
-  const newMonths = freeBalance + extraSaving > 0 && dreamAmount > 0
-    ? Math.ceil(dreamAmount / (freeBalance + extraSaving))
-    : 0;
-  const savedDays = (currentMonths - newMonths) * 30;
+  const recommendations: string[] = [];
+  if (totalIncome === 0 && totalExpenses === 0) {
+    recommendations.push("👋 Введите ваши доходы и расходы, чтобы получить персональные рекомендации.");
+  } else {
+    if (balance < 0) {
+      recommendations.push("🚨 Расходы превышают доходы! Рекомендуем пересмотреть траты и найти возможности для экономии.");
+    }
+    if (balance >= 0 && savingsRate < 10 && totalIncome > 0) {
+      recommendations.push("⚠️ Вы откладываете менее 10% дохода. Попробуйте сократить необязательные расходы.");
+    }
+    if (savingsRate >= 10 && savingsRate < 20) {
+      recommendations.push("👍 Неплохо! Вы откладываете " + savingsRate + "% дохода. Идеальная цель — 20%.");
+    }
+    if (savingsRate >= 20) {
+      recommendations.push("🎉 Отлично! Вы откладываете " + savingsRate + "% дохода — это прекрасный показатель!");
+    }
+    if (expenses.length > 0) {
+      const sorted = [...expenses].sort((a, b) => b.amount - a.amount);
+      if (sorted[0] && sorted[0].amount > 0) {
+        const topPercent = totalExpenses > 0 ? Math.round((sorted[0].amount / totalExpenses) * 100) : 0;
+        recommendations.push(`📊 Самый крупный расход: «${sorted[0].name || "Без названия"}» — ${topPercent}% от всех трат.`);
+      }
+    }
+    if (balance > 0) {
+      const dailyFreedom = Math.floor(balance / (totalExpenses / 30 || 1));
+      recommendations.push(`🛡️ У вас ${dailyFreedom} дней финансовой свободы в этом месяце.`);
+    }
+    if (incomes.length === 1 && totalIncome > 0) {
+      recommendations.push("💡 У вас один источник дохода. Подумайте о диверсификации для финансовой стабильности.");
+    }
+  }
+
+  const hasData = totalIncome > 0 || totalExpenses > 0;
 
   return (
     <motion.div
@@ -55,126 +68,164 @@ const Dashboard = ({ totalIncome, totalExpenses, dreamName, dreamAmount }: Props
       transition={{ delay: 0.2 }}
       className="space-y-5"
     >
-      {/* Freedom days */}
-      <div className="glass rounded-[2rem] p-6">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="gradient-fill p-2.5 rounded-2xl">
-            <Shield className="w-5 h-5 text-primary-foreground" />
+      {/* Balance summary */}
+      <div className="glass rounded-[2rem] p-6 relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-full h-1 rounded-t-[2rem]"
+          style={{
+            background: balance >= 0
+              ? "linear-gradient(90deg, #22c55e, #4ade80)"
+              : "linear-gradient(90deg, #ef4444, #f87171)"
+          }}
+        />
+        <div className="flex items-center gap-3 mb-5">
+          <div className={`p-2.5 rounded-2xl ${balance >= 0 ? "bg-green-500/15" : "bg-red-500/15"}`}>
+            <Scale className={`w-5 h-5 ${balance >= 0 ? "text-green-600" : "text-red-500"}`} />
           </div>
-          <h3 className="font-display text-base font-bold text-foreground">Запас прочности</h3>
+          <div>
+            <h3 className="font-display text-base font-bold text-foreground">Баланс</h3>
+            <p className="text-xs text-muted-foreground">Доходы минус расходы</p>
+          </div>
         </div>
-        <div className="text-center py-2">
-          <motion.span
-            key={freedomDays}
-            initial={{ scale: 0.5, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="text-5xl font-display font-bold gradient-text"
-          >
-            {totalIncome > 0 ? freedomDays : "—"}
-          </motion.span>
-          <p className="text-muted-foreground text-sm mt-2">
-            {totalIncome > 0
-              ? `Этот месяц дарит вам ${freedomDays} дней финансовой свободы`
-              : "Введите доходы, чтобы увидеть ваш запас"}
-          </p>
-        </div>
-      </div>
 
-      {/* Donut chart */}
-      <div className="glass rounded-[2rem] p-6">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="bg-accent/10 p-2.5 rounded-2xl">
-            <TrendingUp className="w-5 h-5 text-accent" />
-          </div>
-          <h3 className="font-display text-base font-bold text-foreground">Колесо баланса</h3>
-        </div>
-        <div className="h-48 flex items-center justify-center relative">
-          {totalIncome > 0 ? (
-            <>
-              <Doughnut data={chartData} options={chartOptions} />
-              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <span className="text-2xl font-display font-bold text-foreground">
-                  {totalIncome > 0 ? Math.round((freeBalance / totalIncome) * 100) : 0}%
-                </span>
-                <span className="text-xs text-muted-foreground">свободно</span>
-              </div>
-            </>
-          ) : (
-            <p className="text-muted-foreground text-sm">Ожидаем данных...</p>
+        <div className="text-center py-3">
+          <motion.span
+            key={balance}
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className={`text-4xl md:text-5xl font-display font-bold ${balance >= 0 ? "text-green-600" : "text-red-500"}`}
+          >
+            {hasData ? (balance >= 0 ? "+" : "") + balance.toLocaleString("ru-RU") + " ₽" : "—"}
+          </motion.span>
+          {hasData && totalIncome > 0 && (
+            <p className="text-sm text-muted-foreground mt-2">
+              {savingsRate >= 0 ? `Вы сохраняете ${savingsRate}% дохода` : "Дефицит бюджета"}
+            </p>
           )}
         </div>
-        <div className="flex justify-center gap-6 mt-3">
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full gradient-fill" />
-            <span className="text-xs text-muted-foreground">На мечту</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-border" />
-            <span className="text-xs text-muted-foreground">Расходы</span>
-          </div>
-        </div>
       </div>
 
-      {/* Dream progress */}
+      {/* Income vs Expenses bars */}
       <div className="glass rounded-[2rem] p-6">
-        <div className="flex items-center gap-3 mb-4">
+        <div className="flex items-center gap-3 mb-5">
           <div className="gradient-fill p-2.5 rounded-2xl">
-            <Target className="w-5 h-5 text-primary-foreground" />
+            <BarChart3 className="w-5 h-5 text-primary-foreground" />
           </div>
-          <h3 className="font-display text-base font-bold text-foreground">
-            {dreamName || "Мечта"}
-          </h3>
+          <div>
+            <h3 className="font-display text-base font-bold text-foreground">Сравнение</h3>
+            <p className="text-xs text-muted-foreground">Доходы и расходы</p>
+          </div>
         </div>
 
-        <div className="relative h-5 rounded-full bg-muted overflow-hidden mb-3">
-          <motion.div
-            className="absolute inset-y-0 left-0 rounded-full gradient-fill"
-            initial={{ width: 0 }}
-            animate={{ width: `${dreamProgress}%` }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-          />
-        </div>
+        {hasData ? (
+          <div className="space-y-4">
+            {/* Income bar */}
+            <div>
+              <div className="flex justify-between items-center mb-1.5">
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4 text-green-500" />
+                  <span className="text-sm font-medium text-foreground">Доходы</span>
+                </div>
+                <span className="text-sm font-bold text-green-600">{totalIncome.toLocaleString("ru-RU")} ₽</span>
+              </div>
+              <div className="h-6 rounded-full bg-muted overflow-hidden">
+                <motion.div
+                  className="h-full rounded-full"
+                  style={{ background: "linear-gradient(90deg, #22c55e, #4ade80)" }}
+                  initial={{ width: 0 }}
+                  animate={{ width: `${incomePercent}%` }}
+                  transition={{ duration: 0.8, ease: "easeOut" }}
+                />
+              </div>
+            </div>
 
-        <div className="flex justify-between text-sm">
-          <span className="text-muted-foreground">{dreamProgress.toFixed(1)}%</span>
-          <span className="font-semibold text-foreground">
-            {dreamAmount > 0 && freeBalance > 0
-              ? `${monthsToDream} мес.`
-              : "—"}
-          </span>
-        </div>
+            {/* Expense bar */}
+            <div>
+              <div className="flex justify-between items-center mb-1.5">
+                <div className="flex items-center gap-2">
+                  <TrendingDown className="w-4 h-4 text-red-500" />
+                  <span className="text-sm font-medium text-foreground">Расходы</span>
+                </div>
+                <span className="text-sm font-bold text-red-500">{totalExpenses.toLocaleString("ru-RU")} ₽</span>
+              </div>
+              <div className="h-6 rounded-full bg-muted overflow-hidden">
+                <motion.div
+                  className="h-full rounded-full"
+                  style={{ background: "linear-gradient(90deg, #ef4444, #f87171)" }}
+                  initial={{ width: 0 }}
+                  animate={{ width: `${expensePercent}%` }}
+                  transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
+                />
+              </div>
+            </div>
 
-        {dreamAmount > 0 && freeBalance > 0 && (
-          <p className="text-sm text-muted-foreground mt-2 text-center">
-            Ваша мечта «{dreamName || "..."}» исполнится через{" "}
-            <span className="font-semibold gradient-text">{monthsToDream} мес.</span>
-          </p>
+            {/* Breakdown lists */}
+            {incomes.filter(i => i.amount > 0).length > 0 && (
+              <div className="mt-4 pt-3 border-t border-border/50">
+                <p className="text-xs text-muted-foreground mb-2 font-medium">Детализация доходов</p>
+                <div className="space-y-1.5">
+                  {incomes.filter(i => i.amount > 0).map(inc => (
+                    <div key={inc.id} className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">{inc.name || "Без названия"}</span>
+                      <span className="font-medium text-green-600">+{inc.amount.toLocaleString("ru-RU")} ₽</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {expenses.filter(e => e.amount > 0).length > 0 && (
+              <div className="pt-3 border-t border-border/50">
+                <p className="text-xs text-muted-foreground mb-2 font-medium">Детализация расходов</p>
+                <div className="space-y-1.5">
+                  {expenses.filter(e => e.amount > 0).map(exp => (
+                    <div key={exp.id} className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">{exp.name || "Без названия"}</span>
+                      <span className="font-medium text-red-500">-{exp.amount.toLocaleString("ru-RU")} ₽</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="text-center py-8">
+            <BarChart3 className="w-10 h-10 text-muted-foreground/30 mx-auto mb-2" />
+            <p className="text-muted-foreground text-sm">Ожидаем данных...</p>
+          </div>
         )}
       </div>
 
-      {/* Tip */}
-      {totalIncome > 0 && dreamAmount > 0 && freeBalance > 0 && savedDays > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="glass rounded-[2rem] p-6"
-          style={{ background: "linear-gradient(135deg, hsl(245 58% 51% / 0.06), hsl(270 60% 55% / 0.08))" }}
-        >
-          <div className="flex items-start gap-3">
-            <div className="gradient-fill p-2 rounded-xl mt-0.5">
-              <Lightbulb className="w-4 h-4 text-primary-foreground" />
-            </div>
-            <div>
-              <h4 className="font-display text-sm font-bold text-foreground mb-1">Совет Навигатора</h4>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                Если отложить ещё {extraSaving.toLocaleString("ru-RU")}₽, мечта станет ближе на{" "}
-                <span className="font-semibold text-foreground">{savedDays} дней</span>!
-              </p>
-            </div>
+      {/* Recommendations */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
+        className="glass rounded-[2rem] p-6 relative overflow-hidden"
+      >
+        <div className="absolute top-0 right-0 w-40 h-40 rounded-full bg-accent/5 blur-3xl -translate-y-1/2 translate-x-1/2" />
+        <div className="flex items-center gap-3 mb-4 relative">
+          <div className="gradient-fill p-2.5 rounded-2xl">
+            <Lightbulb className="w-5 h-5 text-primary-foreground" />
           </div>
-        </motion.div>
-      )}
+          <div>
+            <h3 className="font-display text-base font-bold text-foreground">Рекомендации</h3>
+            <p className="text-xs text-muted-foreground">Персональные советы</p>
+          </div>
+        </div>
+        <div className="space-y-3 relative">
+          {recommendations.map((rec, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.5 + i * 0.1 }}
+              className="text-sm text-muted-foreground leading-relaxed bg-muted/50 rounded-2xl px-4 py-3"
+            >
+              {rec}
+            </motion.div>
+          ))}
+        </div>
+      </motion.div>
     </motion.div>
   );
 };
