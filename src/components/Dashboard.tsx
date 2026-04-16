@@ -1,62 +1,57 @@
 import { BarChart3, Lightbulb, TrendingUp, TrendingDown, Scale } from "lucide-react";
 import { motion } from "framer-motion";
-
-interface IncomeItem {
-  id: string;
-  name: string;
-  amount: number;
-}
-
-interface ExpenseItem {
-  id: string;
-  name: string;
-  amount: number;
-}
+import { Category, Entry } from "@/types/budget";
 
 interface Props {
-  incomes: IncomeItem[];
-  expenses: ExpenseItem[];
-  totalIncome: number;
-  totalExpenses: number;
+  entries: Entry[];
+  categories: Category[];
 }
 
-const Dashboard = ({ incomes, expenses, totalIncome, totalExpenses }: Props) => {
+const Dashboard = ({ entries, categories }: Props) => {
+  const incomeEntries = entries.filter((e) => e.kind === "income");
+  const expenseEntries = entries.filter((e) => e.kind === "expense");
+  const totalIncome = incomeEntries.reduce((s, e) => s + e.amount, 0);
+  const totalExpenses = expenseEntries.reduce((s, e) => s + e.amount, 0);
   const balance = totalIncome - totalExpenses;
   const maxValue = Math.max(totalIncome, totalExpenses, 1);
   const incomePercent = (totalIncome / maxValue) * 100;
   const expensePercent = (totalExpenses / maxValue) * 100;
   const savingsRate = totalIncome > 0 ? Math.round((balance / totalIncome) * 100) : 0;
 
+  const sumByCat = (list: Entry[]) => {
+    const m = new Map<string, number>();
+    list.forEach((e) => m.set(e.categoryId, (m.get(e.categoryId) ?? 0) + e.amount));
+    return Array.from(m.entries())
+      .map(([id, sum]) => ({ cat: categories.find((c) => c.id === id), sum }))
+      .sort((a, b) => b.sum - a.sum);
+  };
+
+  const incomeByCat = sumByCat(incomeEntries);
+  const expenseByCat = sumByCat(expenseEntries);
+
   const recommendations: string[] = [];
   if (totalIncome === 0 && totalExpenses === 0) {
-    recommendations.push("👋 Введите ваши доходы и расходы, чтобы получить персональные рекомендации.");
+    recommendations.push("👋 Добавьте доходы и расходы за месяц, чтобы получить персональные рекомендации.");
   } else {
-    if (balance < 0) {
-      recommendations.push("🚨 Расходы превышают доходы! Рекомендуем пересмотреть траты и найти возможности для экономии.");
-    }
-    if (balance >= 0 && savingsRate < 10 && totalIncome > 0) {
+    if (balance < 0) recommendations.push("🚨 Расходы превышают доходы! Пересмотрите крупные траты.");
+    if (balance >= 0 && savingsRate < 10 && totalIncome > 0)
       recommendations.push("⚠️ Вы откладываете менее 10% дохода. Попробуйте сократить необязательные расходы.");
+    if (savingsRate >= 10 && savingsRate < 20)
+      recommendations.push(`👍 Неплохо! Вы откладываете ${savingsRate}% дохода. Идеальная цель — 20%.`);
+    if (savingsRate >= 20)
+      recommendations.push(`🎉 Отлично! Вы откладываете ${savingsRate}% дохода — прекрасный показатель!`);
+
+    if (expenseByCat[0] && expenseByCat[0].sum > 0) {
+      const top = expenseByCat[0];
+      const topPercent = totalExpenses > 0 ? Math.round((top.sum / totalExpenses) * 100) : 0;
+      recommendations.push(`📊 Самая крупная категория расходов: ${top.cat?.emoji ?? ""} «${top.cat?.name ?? "?"}» — ${topPercent}% от всех трат.`);
     }
-    if (savingsRate >= 10 && savingsRate < 20) {
-      recommendations.push("👍 Неплохо! Вы откладываете " + savingsRate + "% дохода. Идеальная цель — 20%.");
-    }
-    if (savingsRate >= 20) {
-      recommendations.push("🎉 Отлично! Вы откладываете " + savingsRate + "% дохода — это прекрасный показатель!");
-    }
-    if (expenses.length > 0) {
-      const sorted = [...expenses].sort((a, b) => b.amount - a.amount);
-      if (sorted[0] && sorted[0].amount > 0) {
-        const topPercent = totalExpenses > 0 ? Math.round((sorted[0].amount / totalExpenses) * 100) : 0;
-        recommendations.push(`📊 Самый крупный расход: «${sorted[0].name || "Без названия"}» — ${topPercent}% от всех трат.`);
-      }
-    }
-    if (balance > 0) {
-      const dailyFreedom = Math.floor(balance / (totalExpenses / 30 || 1));
+    if (balance > 0 && totalExpenses > 0) {
+      const dailyFreedom = Math.floor(balance / (totalExpenses / 30));
       recommendations.push(`🛡️ У вас ${dailyFreedom} дней финансовой свободы в этом месяце.`);
     }
-    if (incomes.length === 1 && totalIncome > 0) {
+    if (incomeByCat.length === 1 && totalIncome > 0)
       recommendations.push("💡 У вас один источник дохода. Подумайте о диверсификации для финансовой стабильности.");
-    }
   }
 
   const hasData = totalIncome > 0 || totalExpenses > 0;
@@ -70,11 +65,12 @@ const Dashboard = ({ incomes, expenses, totalIncome, totalExpenses }: Props) => 
     >
       {/* Balance summary */}
       <div className="glass rounded-[2rem] p-6 relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-1 rounded-t-[2rem]"
+        <div
+          className="absolute top-0 left-0 w-full h-1 rounded-t-[2rem]"
           style={{
             background: balance >= 0
               ? "linear-gradient(90deg, #22c55e, #4ade80)"
-              : "linear-gradient(90deg, #ef4444, #f87171)"
+              : "linear-gradient(90deg, #ef4444, #f87171)",
           }}
         />
         <div className="flex items-center gap-3 mb-5">
@@ -82,7 +78,7 @@ const Dashboard = ({ incomes, expenses, totalIncome, totalExpenses }: Props) => 
             <Scale className={`w-5 h-5 ${balance >= 0 ? "text-green-600" : "text-red-500"}`} />
           </div>
           <div>
-            <h3 className="font-display text-base font-bold text-foreground">Баланс</h3>
+            <h3 className="font-display text-base font-bold text-foreground">Баланс месяца</h3>
             <p className="text-xs text-muted-foreground">Доходы минус расходы</p>
           </div>
         </div>
@@ -118,7 +114,6 @@ const Dashboard = ({ incomes, expenses, totalIncome, totalExpenses }: Props) => 
 
         {hasData ? (
           <div className="space-y-4">
-            {/* Income bar */}
             <div>
               <div className="flex justify-between items-center mb-1.5">
                 <div className="flex items-center gap-2">
@@ -138,7 +133,6 @@ const Dashboard = ({ incomes, expenses, totalIncome, totalExpenses }: Props) => 
               </div>
             </div>
 
-            {/* Expense bar */}
             <div>
               <div className="flex justify-between items-center mb-1.5">
                 <div className="flex items-center gap-2">
@@ -157,35 +151,6 @@ const Dashboard = ({ incomes, expenses, totalIncome, totalExpenses }: Props) => 
                 />
               </div>
             </div>
-
-            {/* Breakdown lists */}
-            {incomes.filter(i => i.amount > 0).length > 0 && (
-              <div className="mt-4 pt-3 border-t border-border/50">
-                <p className="text-xs text-muted-foreground mb-2 font-medium">Детализация доходов</p>
-                <div className="space-y-1.5">
-                  {incomes.filter(i => i.amount > 0).map(inc => (
-                    <div key={inc.id} className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">{inc.name || "Без названия"}</span>
-                      <span className="font-medium text-green-600">+{inc.amount.toLocaleString("ru-RU")} ₽</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {expenses.filter(e => e.amount > 0).length > 0 && (
-              <div className="pt-3 border-t border-border/50">
-                <p className="text-xs text-muted-foreground mb-2 font-medium">Детализация расходов</p>
-                <div className="space-y-1.5">
-                  {expenses.filter(e => e.amount > 0).map(exp => (
-                    <div key={exp.id} className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">{exp.name || "Без названия"}</span>
-                      <span className="font-medium text-red-500">-{exp.amount.toLocaleString("ru-RU")} ₽</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
         ) : (
           <div className="text-center py-8">
