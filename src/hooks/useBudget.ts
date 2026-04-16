@@ -40,8 +40,12 @@ const load = (): BudgetState => {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return initialState;
     const parsed = JSON.parse(raw);
+    const existing: Category[] = parsed.categories?.length ? parsed.categories : [];
+    // Мержим: добавляем дефолтные категории, которых ещё нет (по id)
+    const existingIds = new Set(existing.map((c) => c.id));
+    const merged = [...existing, ...DEFAULT_CATEGORIES.filter((c) => !existingIds.has(c.id))];
     return {
-      categories: parsed.categories?.length ? parsed.categories : DEFAULT_CATEGORIES,
+      categories: merged.length ? merged : DEFAULT_CATEGORIES,
       months: parsed.months ?? {},
     };
   } catch {
