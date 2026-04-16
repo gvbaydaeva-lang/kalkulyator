@@ -98,18 +98,23 @@ const LedgerCard = ({ kind, entries, categories, defaultDate, onAdd, onRemove, o
       {/* Aggregated by category */}
       {grouped.length > 0 && (
         <div className="space-y-2 relative">
-          <p className="text-xs font-medium text-muted-foreground">По категориям</p>
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-semibold text-foreground/70 uppercase tracking-wide">По категориям</p>
+            <p className="text-[10px] text-muted-foreground">{grouped.length} {grouped.length === 1 ? "категория" : "категорий"}</p>
+          </div>
           {grouped.map(({ cat, sum, count }) => {
             const pct = total > 0 ? (sum / total) * 100 : 0;
             return (
-              <div key={cat?.id ?? "unknown"} className="bg-background/60 rounded-xl p-2.5">
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-sm font-medium text-foreground flex items-center gap-1.5">
-                    <span>{cat?.emoji ?? "❓"}</span>
-                    {cat?.name ?? "Без категории"}
-                    <span className="text-xs text-muted-foreground">· {count}</span>
-                  </span>
-                  <span className={`text-sm font-bold ${accentText}`}>
+              <div key={cat?.id ?? "unknown"} className="bg-background/70 rounded-2xl p-3 hover:bg-background transition-colors">
+                <div className="flex items-center justify-between mb-2 gap-2">
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <span className="text-xl shrink-0">{cat?.emoji ?? "❓"}</span>
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-foreground truncate">{cat?.name ?? "Без категории"}</p>
+                      <p className="text-[11px] text-muted-foreground">{count} {count === 1 ? "запись" : count < 5 ? "записи" : "записей"} · {Math.round(pct)}%</p>
+                    </div>
+                  </div>
+                  <span className={`text-sm font-bold ${accentText} shrink-0 tabular-nums`}>
                     {sum.toLocaleString("ru-RU")} ₽
                   </span>
                 </div>
@@ -118,7 +123,7 @@ const LedgerCard = ({ kind, entries, categories, defaultDate, onAdd, onRemove, o
                     initial={{ width: 0 }}
                     animate={{ width: `${pct}%` }}
                     transition={{ duration: 0.5 }}
-                    className={`h-full rounded-full ${isIncome ? "bg-green-500" : "bg-destructive"}`}
+                    className={`h-full rounded-full ${isIncome ? "bg-gradient-to-r from-green-400 to-green-500" : "bg-gradient-to-r from-red-400 to-red-500"}`}
                   />
                 </div>
               </div>
@@ -130,7 +135,7 @@ const LedgerCard = ({ kind, entries, categories, defaultDate, onAdd, onRemove, o
       {/* Recent entries */}
       {sortedEntries.length > 0 && (
         <div className="space-y-1.5 relative">
-          <p className="text-xs font-medium text-muted-foreground">Последние записи</p>
+          <p className="text-xs font-semibold text-foreground/70 uppercase tracking-wide">Последние записи</p>
           <AnimatePresence>
             {visibleEntries.map((e) => {
               const cat = categories.find((c) => c.id === e.categoryId);
@@ -142,24 +147,25 @@ const LedgerCard = ({ kind, entries, categories, defaultDate, onAdd, onRemove, o
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: 10, height: 0 }}
-                  className="flex items-center gap-2 bg-background/60 rounded-xl px-3 py-2 group"
+                  className="flex items-center gap-2 bg-background/70 rounded-xl px-2.5 py-2 group hover:bg-background transition-colors"
                 >
-                  <div className="text-xs font-semibold text-muted-foreground w-10 text-center">
-                    {day}.{month}
+                  <div className="flex flex-col items-center justify-center bg-muted/70 rounded-lg px-1.5 py-0.5 shrink-0 min-w-[36px]">
+                    <span className="text-[11px] font-bold text-foreground leading-tight">{day}</span>
+                    <span className="text-[9px] text-muted-foreground leading-tight">.{month}</span>
                   </div>
-                  <span className="text-base">{cat?.emoji ?? "❓"}</span>
+                  <span className="text-lg shrink-0">{cat?.emoji ?? "❓"}</span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground truncate">
+                    <p className="text-sm font-medium text-foreground truncate leading-tight">
                       {cat?.name ?? "Без категории"}
                     </p>
-                    {e.note && <p className="text-xs text-muted-foreground truncate">{e.note}</p>}
+                    {e.note && <p className="text-[11px] text-muted-foreground truncate italic">«{e.note}»</p>}
                   </div>
-                  <span className={`text-sm font-bold ${accentText} shrink-0`}>
+                  <span className={`text-sm font-bold ${accentText} shrink-0 tabular-nums`}>
                     {isIncome ? "+" : "−"}{e.amount.toLocaleString("ru-RU")} ₽
                   </span>
                   <button
                     onClick={() => onRemove(e.id)}
-                    className="text-muted-foreground hover:text-destructive transition-colors opacity-0 group-hover:opacity-100"
+                    className="text-muted-foreground hover:text-destructive transition-colors opacity-0 group-hover:opacity-100 shrink-0"
                   >
                     <X className="w-4 h-4" />
                   </button>
