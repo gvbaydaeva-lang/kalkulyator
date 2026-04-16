@@ -57,9 +57,9 @@ const IncomeCard = ({ incomes, onAdd, onRemove, onUpdate }: Props) => (
               value={inc.name}
               onChange={(e) => onUpdate(inc.id, "name", e.target.value)}
               placeholder="Название дохода"
-              className="flex-1 glass rounded-xl px-3 py-2.5 text-sm font-medium text-foreground placeholder:text-muted-foreground/40 outline-none focus:ring-2 focus:ring-green-400/30 transition-all"
+              className="flex-1 min-w-0 glass rounded-xl px-3 py-2.5 text-sm font-medium text-foreground placeholder:text-muted-foreground/40 outline-none focus:ring-2 focus:ring-green-400/30 transition-all"
             />
-            <div className="relative w-28">
+            <div className="relative w-32 shrink-0">
               <input
                 type="number"
                 value={inc.amount || ""}
