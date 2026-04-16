@@ -15,20 +15,30 @@ const sumByCategory = (entries: Entry[]) => {
   return map;
 };
 
-const Trend = ({ delta, pct }: { delta: number; pct: number | null }) => {
+const fmtCompact = (n: number) => {
+  const abs = Math.abs(n);
+  if (abs >= 1_000_000) return (n / 1_000_000).toFixed(1).replace(/\.0$/, "") + "М";
+  if (abs >= 10_000) return Math.round(n / 1000) + "К";
+  return n.toLocaleString("ru-RU");
+};
+
+const Trend = ({ delta, pct, compact = false }: { delta: number; pct: number | null; compact?: boolean }) => {
   if (delta === 0) {
     return (
-      <span className="inline-flex items-center gap-1 text-muted-foreground text-[11px] font-medium whitespace-nowrap">
+      <span className="inline-flex items-center gap-1 text-muted-foreground text-[10px] font-medium whitespace-nowrap">
         <Minus className="w-3 h-3" /> 0
       </span>
     );
   }
   const up = delta > 0;
+  const value = compact ? fmtCompact(Math.abs(delta)) : Math.abs(delta).toLocaleString("ru-RU");
+  // clamp pct display to avoid huge numbers
+  const pctDisplay = pct !== null ? (Math.abs(pct) > 999 ? ">999" : pct.toFixed(0)) : null;
   return (
-    <span className={`inline-flex items-center gap-0.5 text-[11px] font-semibold whitespace-nowrap tabular-nums ${up ? "text-secondary" : "text-destructive"}`}>
+    <span className={`inline-flex items-center gap-0.5 text-[10px] font-semibold whitespace-nowrap tabular-nums leading-tight ${up ? "text-secondary" : "text-destructive"}`}>
       {up ? <ArrowUp className="w-3 h-3 shrink-0" /> : <ArrowDown className="w-3 h-3 shrink-0" />}
-      {Math.abs(delta).toLocaleString("ru-RU")}&nbsp;₽
-      {pct !== null && <span className="opacity-70 ml-0.5">({up ? "+" : ""}{pct.toFixed(0)}%)</span>}
+      {value}&nbsp;₽
+      {pctDisplay !== null && <span className="opacity-70 ml-0.5">({up ? "+" : ""}{pctDisplay}%)</span>}
     </span>
   );
 };
@@ -115,13 +125,23 @@ const ComparisonCard = ({ currentEntries, previousEntries, categories, prevMonth
         {metrics.map((m) => {
           const delta = m.cur - m.prev;
           const pct = calcPct(m.cur, m.prev);
+          // compact number formatting for mobile to prevent overflow
+          const fmt = (n: number) => {
+            const abs = Math.abs(n);
+            if (abs >= 1_000_000) return (n / 1_000_000).toFixed(1).replace(/\.0$/, "") + "М";
+            if (abs >= 10_000) return Math.round(n / 1000) + "К";
+            return n.toLocaleString("ru-RU");
+          };
           return (
-            <div key={m.label} className="bg-background/60 rounded-2xl p-2.5 flex flex-col items-center text-center min-w-0">
+            <div key={m.label} className="bg-card/70 rounded-2xl p-2.5 flex flex-col items-center text-center min-w-0 overflow-hidden">
               <p className="text-[11px] text-muted-foreground mb-1 truncate w-full">{m.label}</p>
-              <p className={`font-display text-sm sm:text-base font-bold ${m.color} mb-1.5 tabular-nums whitespace-nowrap leading-tight`}>
-                {m.cur.toLocaleString("ru-RU")}&nbsp;₽
+              <p className={`font-display text-sm sm:text-base font-bold ${m.color} mb-2 tabular-nums whitespace-nowrap leading-tight`}>
+                {fmt(m.cur)}&nbsp;₽
               </p>
-              <Trend delta={delta} pct={pct} />
+              <div className="w-full flex flex-col items-center gap-0.5 border-t border-border/50 pt-1.5">
+                <span className="text-[9px] uppercase tracking-wide text-muted-foreground/70">vs пред.</span>
+                <Trend delta={delta} pct={pct} compact />
+              </div>
             </div>
           );
         })}
