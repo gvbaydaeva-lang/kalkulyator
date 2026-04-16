@@ -25,7 +25,7 @@ const Trend = ({ delta, pct }: { delta: number; pct: number | null }) => {
   }
   const up = delta > 0;
   return (
-    <span className={`inline-flex items-center gap-1 text-xs font-semibold ${up ? "text-green-600" : "text-destructive"}`}>
+    <span className={`inline-flex items-center gap-1 text-xs font-semibold ${up ? "text-secondary" : "text-destructive"}`}>
       {up ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />}
       {Math.abs(delta).toLocaleString("ru-RU")} ₽
       {pct !== null && <span className="opacity-70">({up ? "+" : ""}{pct.toFixed(0)}%)</span>}
@@ -44,9 +44,9 @@ const ComparisonCard = ({ currentEntries, previousEntries, categories, prevMonth
   const calcPct = (cur: number, prev: number) => (prev === 0 ? null : ((cur - prev) / Math.abs(prev)) * 100);
 
   const metrics = [
-    { label: "Доходы", cur: curIncome, prev: prevIncome, color: "text-green-600", invertGood: false },
+    { label: "Доходы", cur: curIncome, prev: prevIncome, color: "text-secondary", invertGood: false },
     { label: "Расходы", cur: curExpense, prev: prevExpense, color: "text-destructive", invertGood: true },
-    { label: "Баланс", cur: curBalance, prev: prevBalance, color: curBalance >= 0 ? "text-green-600" : "text-destructive", invertGood: false },
+    { label: "Баланс", cur: curBalance, prev: prevBalance, color: curBalance >= 0 ? "text-secondary" : "text-destructive", invertGood: false },
   ];
 
   // Category-level comparison (expenses only, where it matters most)
