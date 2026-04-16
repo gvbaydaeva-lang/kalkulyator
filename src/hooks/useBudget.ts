@@ -4,12 +4,28 @@ import { BudgetState, Category, Entry, MonthData } from "@/types/budget";
 const STORAGE_KEY = "budget-app-v1";
 
 const DEFAULT_CATEGORIES: Category[] = [
+  // Доходы
   { id: "c-salary", name: "Зарплата", emoji: "💼", kind: "income" },
   { id: "c-freelance", name: "Фриланс", emoji: "💻", kind: "income" },
+  { id: "c-bonus", name: "Премия", emoji: "🎁", kind: "income" },
+  { id: "c-investments", name: "Инвестиции", emoji: "📈", kind: "income" },
+  { id: "c-other-income", name: "Прочее", emoji: "✨", kind: "income" },
+  // Расходы — самые популярные
   { id: "c-food", name: "Продукты", emoji: "🛒", kind: "expense" },
   { id: "c-transport", name: "Транспорт", emoji: "🚗", kind: "expense" },
-  { id: "c-cafe", name: "Кафе", emoji: "☕", kind: "expense" },
-  { id: "c-housing", name: "Жильё", emoji: "🏠", kind: "expense" },
+  { id: "c-cafe", name: "Кафе и рестораны", emoji: "☕", kind: "expense" },
+  { id: "c-housing", name: "Жильё и ЖКХ", emoji: "🏠", kind: "expense" },
+  { id: "c-clothes", name: "Одежда", emoji: "👕", kind: "expense" },
+  { id: "c-marketplace", name: "Маркетплейсы", emoji: "📦", kind: "expense" },
+  { id: "c-education", name: "Образование", emoji: "🎓", kind: "expense" },
+  { id: "c-kids", name: "Дети и садик", emoji: "🧸", kind: "expense" },
+  { id: "c-subscriptions", name: "Подписки", emoji: "🔁", kind: "expense" },
+  { id: "c-health", name: "Здоровье", emoji: "💊", kind: "expense" },
+  { id: "c-entertainment", name: "Развлечения", emoji: "🎬", kind: "expense" },
+  { id: "c-beauty", name: "Красота", emoji: "💅", kind: "expense" },
+  { id: "c-pets", name: "Питомцы", emoji: "🐾", kind: "expense" },
+  { id: "c-travel", name: "Путешествия", emoji: "✈️", kind: "expense" },
+  { id: "c-other-expense", name: "Прочее", emoji: "🧩", kind: "expense" },
 ];
 
 const initialState: BudgetState = {
